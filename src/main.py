@@ -7,16 +7,16 @@ load_dotenv()
 from langchain_core.messages import BaseMessage, HumanMessage
 from langgraph.graph import END, MessageGraph
 
-from chains import generate_chain, reflect_chain
+from chains import generate_chain, reflect_chain 
 
 
 REFLECT = "reflect"
 GENERATE = "generate"
 
-def generate_messages(messages: List[BaseMessage]) -> List[BaseMessage]:
+def generate_messages(messages: Sequence[BaseMessage]):
     return generate_chain.invoke({"messages": messages})
 
-def reflect_messages(messages: List[BaseMessage]) -> List[BaseMessage]:
+def reflect_messages(messages: Sequence[BaseMessage]) -> List[BaseMessage]:
     res =  reflect_chain.invoke({"messages": messages})
     return [HumanMessage(content=res.content)]
 
@@ -26,7 +26,7 @@ builder.add_node(REFLECT, reflect_messages)
 builder.set_entry_point(GENERATE)
 
 def should_continue(messages: Sequence[BaseMessage]) -> bool:
-    if len(messages) > 6:
+    if len(messages) > 2:
         return END
     return REFLECT
 
@@ -38,6 +38,10 @@ graph = builder.compile()
 
 if __name__ == "__main__":
     print("Hello World!")
+    
+    # response = chain.invoke({"question": "write me a Haiku"})
+    # print(response)
+    
     inputs = HumanMessage(content="""Make this tweet better:"
                                     @LangChainAI
             — newly Tool Calling feature is seriously underrated.
