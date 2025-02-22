@@ -9,6 +9,10 @@ from langgraph.graph import END, MessageGraph
 
 from chains import generate_chain, reflect_chain 
 
+from langchain.globals import set_verbose
+
+set_verbose(True)
+
 
 REFLECT = "reflect"
 GENERATE = "generate"
@@ -24,14 +28,15 @@ builder = MessageGraph()
 builder.add_node(GENERATE, generate_messages)
 builder.add_node(REFLECT, reflect_messages)
 builder.set_entry_point(GENERATE)
+builder.add_edge(GENERATE, REFLECT)
 
 def should_continue(messages: Sequence[BaseMessage]) -> bool:
-    if len(messages) > 2:
-        return END
-    return REFLECT
+    if messages[-1].content:
+        return GENERATE
+    return END
 
-builder.add_conditional_edges(GENERATE, should_continue)
-builder.add_edge(REFLECT, GENERATE)
+builder.add_conditional_edges(REFLECT, should_continue)
+
 
 graph = builder.compile()
 
@@ -52,3 +57,5 @@ if __name__ == "__main__":
 
                                   """)
     response = graph.invoke(inputs)
+    
+    print(response[-2].content)
